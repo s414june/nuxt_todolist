@@ -37,6 +37,8 @@
                 v-model="item.todo"
                 variant="outlined"
                 color="grey"
+                class="my-2"
+                @keydown.enter="editItem(item)"
               ></v-text-field>
             </template>
             <template v-slot:item.operate="{ item, index }">
@@ -68,7 +70,7 @@ const headers = ref([
 ]);
 const list: Ref<TodoItem[]> = ref([]);
 const { data } = await useFetch("/api/get_todo");
-list.value = data.value;
+list.value = data.value ?? [];
 const inputTodo = ref("");
 function addItem() {
   if (inputTodo.value === "") return;
@@ -82,7 +84,10 @@ function addItem() {
 }
 function editItem(item: TodoItem) {
   item.editing = !item.editing;
-  if (!item.editing) update();
+  if (!item.editing) {
+    item.done = false;
+    update();
+  }
 }
 function deleteItem(index: number) {
   list.value.splice(index, 1);
@@ -102,11 +107,11 @@ interface TodoItem {
 
 async function update() {
   const _list = toRaw(list.value);
-  const data  = await $fetch("/api/update", {
+  const data = await $fetch("/api/update", {
     method: "post",
     body: _list,
   });
-  console.log(data)
+  console.log(data);
 }
 </script>
 
